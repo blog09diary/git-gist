@@ -76,7 +76,10 @@ jobs:
         run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:latest
 
       - name: Stop old container
-        run: docker stop git-gist || true && docker rm git-gist || true
+        shell: bash
+        run: |
+          docker stop git-gist || true
+          docker rm git-gist || true
 
       - name: Run new container
         run: |
