@@ -26,11 +26,15 @@ def test_get_gists_octocat():
         mock_get.return_value = mock_response
         response = client.get("/octocat")
         # Ensure the response is successful
-        assert response.status_code == 200
+        if response.status_code != 200:
+            raise AssertionError(f"Expected status 200, got {response.status_code}")
         # The response should be a list
-        assert isinstance(response.json(), list)
+        if not isinstance(response.json(), list):
+            raise AssertionError("Response is not a list")
         # If there are gists, check for required fields
         if response.json():
             gist = response.json()[0]
-            assert "id" in gist
-            assert "url" in gist
+            if "id" not in gist:
+                raise AssertionError("'id' not in gist")
+            if "url" not in gist:
+                raise AssertionError("'url' not in gist")
