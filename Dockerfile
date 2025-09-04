@@ -37,5 +37,5 @@ USER appuser
 
 EXPOSE 8080
 
-# Run with uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Use app_entry as the entry point for Uvicorn
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]
