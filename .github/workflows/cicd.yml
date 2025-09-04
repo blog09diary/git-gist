@@ -80,5 +80,5 @@ jobs:
           docker ps -q -f name=git-gist | ForEach-Object { docker stop $_; docker rm $_ }
 
       - name: Run new container
-        shell: pwsh
+        shell: powershell
         run: docker run -d --name git-gist -p 8080:8080 -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:latest
