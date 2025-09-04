@@ -78,8 +78,7 @@ jobs:
       - name: Stop old container
         shell: bash
         run: |
-          docker stop git-gist || true
-          docker rm git-gist || true
+          docker ps -q -f name=git-gist | ForEach-Object { docker stop $_; docker rm $_ }
 
       - name: Run new container
         run: |
