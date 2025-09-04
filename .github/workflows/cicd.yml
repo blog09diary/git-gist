@@ -67,35 +67,19 @@ jobs:
           exit-code: '0'
 
   deploy:
-    name: Deploy to AWS EC2
-    runs-on: ubuntu-latest
+    name: Deploy locally
+    runs-on: self-hosted
     needs: docker
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Pull latest image
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:latest
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            # Update system
-            sudo apt-get update -y
+      - name: Stop old container
+        run: docker stop git-gist || true && docker rm git-gist || true
 
-            # Login to DockerHub
-            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
-            # Stop old container
-            docker stop git-gist || true
-            docker rm git-gist || true
-
-            # Pull latest image
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:latest
-
-            # Run new container
+      - name: Run new container
+        run: |
             docker run -d --name git-gist -p 8080:8080 \
-              -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
-              ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:latest
+            -e TOKEN_GITHUB=${{ secrets.TOKEN_GITHUB }} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:latest
