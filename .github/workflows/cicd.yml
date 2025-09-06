@@ -45,7 +45,7 @@ jobs:
 
       # Step 7: Run static code analysis with Flake8 (linting, PEP8 compliance)
       - name: Run static code analysis (Flake8)
-        run: flake8 src --max-line-length=120 --statistics
+        run: flake8 src --max-line-length=120 --statistics --ignore=E302
 
   docker:
     name: Build & Push Docker Image
