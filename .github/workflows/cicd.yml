@@ -93,4 +93,4 @@ jobs:
       run: helm upgrade --install git-gist helm/git-gist-app-chart --namespace git-gist-ns --create-namespace --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/git-gist --set image.tag=${{github.run_id}} -f helm/git-gist-app-chart/values.yaml
         
     - name: Verify rollout status
-      run: kubectl rollout status deployment/git-gist-deployment -n git-gist-ns
+      run: kubectl rollout status deployment/git-gist-app -n git-gist-ns
