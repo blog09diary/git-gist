@@ -70,7 +70,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:${{github.run_id}}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:${{ github.run_id }}
           
       # Step 4: Scan Docker image for vulnerabilities using Trivy
       - name: Security scan Docker image (Trivy)
@@ -80,17 +81,47 @@ jobs:
           format: 'table'
           exit-code: '0'   # Continue pipeline even if vulnerabilities are found
         
-  update-newtag-in-helm-chart:
+  deploy-minikube:
+    name: Deploy to Minikube
     runs-on: self-hosted
     needs: docker
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      
-    - name: Deploy with Helm
-      shell: powershell
-      run: helm upgrade --install git-gist helm/git-gist-app-chart --namespace git-gist-ns --create-namespace --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/git-gist --set image.tag=${{github.run_id}} -f helm/git-gist-app-chart/values.yaml
-        
-    - name: Verify rollout status
-      run: kubectl rollout status deployment/git-gist-app -n git-gist-ns
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Update values.yaml with dynamic Docker tag
+      - name: Update image tag in values.yaml
+        shell: powershell
+        run: |
+          $file = "helm/git-gist-app-chart/values.yaml"
+          (Get-Content $file) -replace 'tag: ".*"', 'tag: "${{ github.run_id }}"' | Set-Content $file
+
+      # Load Docker image into Minikube
+      - name: Load Docker image into Minikube
+        shell: powershell
+        run: minikube image load ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:${{ github.run_id }}
+
+      # Deploy using Helm
+      - name: Deploy with Helm
+        shell: powershell
+        run: |
+          helm upgrade --install git-gist helm/git-gist-app-chart `
+            --namespace git-gist-ns --create-namespace `
+            -f helm/git-gist-app-chart/values.yaml
+
+      # Verify rollout and automatic rollback on failure
+      - name: Verify rollout and rollback if failed
+        shell: powershell
+        run: |
+          try {
+            kubectl rollout status deployment/git-gist-app -n git-gist-ns -w
+          } catch {
+            Write-Host "Rollout failed. Rolling back to previous Helm release..."
+            # Get the latest successful revision
+            $lastRevision = helm history git-gist -n git-gist-ns | Select-String -Pattern "deployed" | Select-Object -Last 1 | ForEach-Object { ($_ -split '\s+')[0] }
+            helm rollback git-gist $lastRevision -n git-gist-ns
+            Write-Host "Printing pod logs for debugging..."
+            kubectl get pods -n git-gist-ns
+            kubectl logs -n git-gist-ns -l app=git-gist
+            exit 1
+          }
