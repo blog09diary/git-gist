@@ -70,13 +70,13 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:${{github.run_id}}
           
       # Step 4: Scan Docker image for vulnerabilities using Trivy
       - name: Security scan Docker image (Trivy)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:latest
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:${{github.run_id}}
           format: 'table'
           exit-code: '0'   # Continue pipeline even if vulnerabilities are found
         
@@ -90,7 +90,7 @@ jobs:
       
     - name: Deploy with Helm
       shell: powershell
-      run: helm upgrade --install git-gist helm/git-gist-app-chart --namespace git-gist-ns --create-namespace --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/git-gist --set image.tag=17515105059 -f helm/git-gist-app-chart/values.yaml
+      run: helm upgrade --install git-gist helm/git-gist-app-chart --namespace git-gist-ns --create-namespace --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/git-gist --set image.tag=${{github.run_id}} -f helm/git-gist-app-chart/values.yaml
         
     - name: Verify rollout status
       run: kubectl rollout status deployment/git-gist-deployment -n git-gist-ns

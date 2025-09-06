@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: blog9diary/git-gist
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: "10016307834"
 
 service:
   type: LoadBalancer   # could be ClusterIP, NodePort, or LoadBalancer

@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "git-gist-app-chart.fullname" . }}
+  name: git-gist-app
   namespace: git-gist-ns
   labels:
-    app: {{ include "git-gist-app-chart.name" . }}
+    app: git-gist-app
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "git-gist-app-chart.name" . }}
+      app: git-gist-app
   template:
     metadata:
       labels:
-        app: {{ include "git-gist-app-chart.name" . }}
+        app: git-gist-app
     spec:
       containers:
       - name: git-gist
