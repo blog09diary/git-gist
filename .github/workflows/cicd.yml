@@ -71,13 +71,13 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:${{ github.run_id }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:${{ github.run_number }}
           
       # Step 4: Scan Docker image for vulnerabilities using Trivy
       - name: Security scan Docker image (Trivy)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:${{github.run_id}}
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:${{github.run_number}}
           format: 'table'
           exit-code: '0'   # Continue pipeline even if vulnerabilities are found
         
@@ -94,12 +94,12 @@ jobs:
         shell: powershell
         run: |
           $file = "helm/git-gist-app-chart/values.yaml"
-          (Get-Content $file) -replace 'tag: ".*"', 'tag: "${{ github.run_id }}"' | Set-Content $file
+          (Get-Content $file) -replace 'tag: ".*"', 'tag: "${{ github.run_number }}"' | Set-Content $file
 
       # Load Docker image into Minikube
       - name: Load Docker image into Minikube
         shell: powershell
-        run: minikube image load ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:${{ github.run_id }}
+        run: minikube image load ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:${{ github.run_number }}
 
       # Deploy using Helm
       - name: Deploy with Helm
