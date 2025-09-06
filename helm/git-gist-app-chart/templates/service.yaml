@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "git-gist-app-chart.fullname" . }}
+  namespace: git-gist-ns
+  labels:
+    app: {{ include "git-gist-app-chart.name" . }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ include "git-gist-app-chart.name" . }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+      protocol: TCP

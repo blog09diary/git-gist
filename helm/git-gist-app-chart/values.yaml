@@ -1,0 +1,26 @@
+replicaCount: 1
+
+image:
+  repository: blog9diary/git-gist
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: LoadBalancer   # could be ClusterIP, NodePort, or LoadBalancer
+  port: 8080           # must match your container’s targetPort
+
+resources: {}
+# Example:
+# resources:
+#   limits:
+#     cpu: 500m
+#     memory: 512Mi
+#   requests:
+#     cpu: 250m
+#     memory: 256Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

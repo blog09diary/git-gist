@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "git-gist-app-chart.fullname" . }}
+  namespace: git-gist-ns
+  labels:
+    app: {{ include "git-gist-app-chart.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "git-gist-app-chart.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "git-gist-app-chart.name" . }}
+    spec:
+      containers:
+      - name: git-gist
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"   # replace with your image
+        ports:
+        - containerPort: {{ .Values.service.port }}

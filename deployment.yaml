@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: git-gist-deployment
+  labels:
+    app: git-gist
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: git-gist
+  template:
+    metadata:
+      labels:
+        app: git-gist
+    spec:
+      containers:
+      - name: git-gist
+        image: blog9diary/git-gist:latest   # replace with your image
+        ports:
+        - containerPort: 8080
+        env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-secret
+              key: token
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: git-gist-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: git-gist
+  ports:
+    - port: 8080
+      targetPort: 8080
