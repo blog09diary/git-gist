@@ -97,4 +97,4 @@ jobs:
         helm upgrade --install git-gist-app ./git-gist-app-chart -n git-gist-ns -f ./git-gist-app-chart/values.yaml
         
     - name: Verify rollout status
-        run: kubectl rollout status deployment/git-gist-deployment -n git-gist-ns
+      run: kubectl rollout status deployment/git-gist-deployment -n git-gist-ns
