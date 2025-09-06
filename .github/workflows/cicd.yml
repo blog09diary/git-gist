@@ -89,11 +89,8 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Deploy with Helm
-      run: |
-        helm upgrade --install git-gist helm/git-gist-app-chart \
-          --namespace git-gist-ns --create-namespace \
-          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/git-gist \
-          --set image.tag=17515105059 -f ./git-gist-app-chart/values.yaml
+      shell: pwsh
+      run: helm upgrade --install git-gist helm/git-gist-app-chart --namespace git-gist-ns --create-namespace --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/git-gist --set image.tag=17515105059 -f helm/git-gist-app-chart/values.yaml
         
     - name: Verify rollout status
       run: kubectl rollout status deployment/git-gist-deployment -n git-gist-ns
