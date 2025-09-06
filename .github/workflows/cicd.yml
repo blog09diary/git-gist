@@ -79,42 +79,25 @@ jobs:
           image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:latest
           format: 'table'
           exit-code: '0'   # Continue pipeline even if vulnerabilities are found
-
-  deploy:
-    name: Deploy locally
+        
+  update-newtag-in-helm-chart:
     runs-on: self-hosted
     needs: docker
 
     steps:
-      - name: Pull latest image
-        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:latest
-
-      - name: Stop old container
-        run: |
-          docker ps -q -f name=git-gist | ForEach-Object { docker stop $_; docker rm $_ }
-
-      - name: Run new container
-        shell: powershell
-        run: docker run -d --name git-gist -p 8080:8080 -e GITHUB_TOKEN=${{ secrets.TOKEN_GITHUB }} ${{ secrets.DOCKERHUB_USERNAME }}/git-gist:latest
-        
-  update-newtag-in-helm-chart:
-    runs-on: ubuntu-latest
-    needs: push
-
-    steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.TOKEN_GITHUB }}
+ }
 
     - name: Update tag in Helm chart
       run: |
         sed -i 's/tag: .*/tag: "${{github.run_id}}"/' helm/git-gist-app-chart/values.yaml
         
-    - name: Commit and push changes
+    # Step 4: Deploy using Helm chart and set image to latest
+    - name: Helm upgrade/install
       run: |
-        git config --global user.email "blog09@gmail.com"
-        git config --global user.name "blog09diary"
-        git add helm/git-gist-app-chart/values.yaml
-        git commit -m "Update tag in Helm chart"
-        git push
+        helm upgrade --install git-gist-app ./git-gist-app-chart -n git-gist-ns -f ./git-gist-app-chart/values.yaml
+        
+    # Step 5: Verify rollout
+      - name: Verify rollout status
+        run: kubectl rollout status deployment/git-gist-deployment -n git-gist-ns
